@@ -5,17 +5,29 @@ import PLANE from "./Geometry/Plane";
 import SUN from "./Lights/Sun";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { ImageLoader, Scene, WebGLRenderer } from "three";
+import {
+  ImageLoader,
+  Ray,
+  Raycaster,
+  Scene,
+  Vector2,
+  Vector3,
+  WebGLRenderer,
+} from "three";
 import PICTURE from "./Geometry/Picture";
 
 function Game() {
   const mountRef = useRef(null);
 
   useEffect(() => {
-    var scene = new Scene();
-    var renderer = new WebGLRenderer();
+    //Vars for rendering
+    const scene = new Scene();
+    const renderer = new WebGLRenderer();
     const fbxLoader = new FBXLoader();
     const imageLoader = new ImageLoader();
+    //Vars for calculation
+    var raycaster = new Raycaster();
+    var mouse = new Vector2();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     mountRef.current.appendChild(renderer.domElement);
@@ -52,15 +64,30 @@ function Game() {
       CAMERA.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
-    function onSceneMouseDown() {
-      console.log("pp");
+    function onSceneMouseDown(event) {
+      mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+      mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, CAMERA);
+
+      let intersects = raycaster.intersectObjects([PICTURE], false);
+      console.log(intersects);
+      console.log(scene.children);
+      console.log(PICTURE);
     }
     window.addEventListener("resize", onWindowResize, false);
-    // mountRef.addEventListener("mousedown", onSceneMouseDown, false);
+    mountRef.current.addEventListener("mousedown", onSceneMouseDown, false);
 
     animate();
-
-    return () => mountRef.current.removeChild(renderer.domElement);
+    // Remove everything on destroy
+    return () => {
+      window.removeEventListener("resize", onWindowResize, false);
+      mountRef.current.removeEventListener(
+        "mousedown",
+        onSceneMouseDown,
+        false
+      );
+      mountRef.current.removeChild(renderer.domElement);
+    };
   }, []);
 
   return <div ref={mountRef}></div>;

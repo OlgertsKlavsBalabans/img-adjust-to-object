@@ -10,5 +10,5 @@ const PICTURE = new Mesh(planeGeo, material);
 // PICTURE.rotation.x = Math.PI * -0.5;
 PICTURE.rotation.y = -0.8;
 PICTURE.position.set(-10, 2, 10);
-
+PICTURE.name = "Picture";
 export default PICTURE;
