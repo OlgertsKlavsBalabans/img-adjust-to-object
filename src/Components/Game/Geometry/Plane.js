@@ -6,5 +6,6 @@ const planeGeo = new PlaneGeometry(30, 30);
 const planeMat = new MeshPhongMaterial({ color: "#8AC" });
 const PLANE = new Mesh(planeGeo, planeMat);
 PLANE.rotation.x = Math.PI * -0.5;
+PLANE.position.set(0, -0.2, 0);
 
 export default PLANE;
