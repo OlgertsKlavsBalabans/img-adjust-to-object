@@ -6,7 +6,13 @@ import SUN from "./Lights/Sun";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
+  BackSide,
+  BoxGeometry,
   ImageLoader,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhongMaterial,
+  PlaneGeometry,
   Ray,
   Raycaster,
   Scene,
@@ -26,11 +32,22 @@ function Game() {
     const fbxLoader = new FBXLoader();
     const imageLoader = new ImageLoader();
     //Vars for calculation
-    var raycaster = new Raycaster();
+    const raycaster = new Raycaster();
     var mouse = new Vector2();
+    //Vars for state of application
+    var selectedPicture = null;
+    var outlineMesh;
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     mountRef.current.appendChild(renderer.domElement);
+
+    //SHADERS???
+    var outlineMaterial = new MeshBasicMaterial({
+      color: 0x00ff00,
+      side: BackSide,
+      opacity: 0.5,
+      transparent: true,
+    });
 
     //Orbit controlls
     const controls = new OrbitControls(CAMERA, renderer.domElement);
@@ -71,9 +88,33 @@ function Game() {
 
       let intersects = raycaster.intersectObjects([PICTURE], false);
       console.log(intersects);
-      console.log(scene.children);
-      console.log(PICTURE);
+      if (intersects.length > 0) {
+        scene.remove(outlineMesh);
+        selectedPicture = intersects[0];
+        outlineMesh = new Mesh(
+          selectedPicture.object.geometry,
+          outlineMaterial
+        );
+        outlineMesh.position.set(
+          selectedPicture.object.position.x,
+          selectedPicture.object.position.y,
+          selectedPicture.object.position.z
+        );
+        outlineMesh.rotation.setFromVector3(selectedPicture.object.rotation);
+        outlineMesh.scale.multiplyScalar(1.05);
+        scene.add(outlineMesh);
+
+        selectedPicture.object.material.transparent = true;
+      } else {
+        if (selectedPicture !== null) {
+          scene.remove(outlineMesh);
+          selectedPicture.object.material.transparent = false;
+          selectedPicture = null;
+          console.log("pp");
+        }
+      }
     }
+    //Add event listeners
     window.addEventListener("resize", onWindowResize, false);
     mountRef.current.addEventListener("mousedown", onSceneMouseDown, false);
 
