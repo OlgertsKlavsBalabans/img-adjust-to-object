@@ -3,8 +3,7 @@ import styled from "styled-components";
 export const Gui = styled.div`
   position: absolute;
   display: flex;
-  /* background-color: red; */
-  border: 1px solid black;
+
   width: fit-content;
   /* height: 100%; */
 `;
