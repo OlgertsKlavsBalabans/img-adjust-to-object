@@ -19,9 +19,27 @@ export default function Gui(props) {
       <S.SeconderyActions>
         {props.acitveOptions.alignActions && subOptions.align ? (
           <>
-            <button>Add rotation point</button>
-            <button>Rotate&scale</button>
-            <button>Adjust scale</button>
+            <button
+              onClick={() => {
+                props.addRotationPointPressed();
+              }}
+            >
+              Add rotation point
+            </button>
+            <button
+              onClick={() => {
+                props.rotateAndScalePressed();
+              }}
+            >
+              Rotate&scale
+            </button>
+            <button
+              onClick={() => {
+                props.adjustScalePressed();
+              }}
+            >
+              Adjust scale
+            </button>
           </>
         ) : null}
       </S.SeconderyActions>

@@ -42,6 +42,8 @@ function Game() {
     //Vars for state of application
     var selectedPicture = null;
     var outlineMesh;
+    var pictureRoationPoint;
+    var objectRotationPoint;
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     mountRef.current.appendChild(renderer.domElement);
@@ -128,6 +130,7 @@ function Game() {
         }
       }
     }
+
     //Add event listeners
     window.addEventListener("resize", onWindowResize, false);
     mountRef.current.addEventListener("mousedown", onSceneMouseDown, false);
@@ -145,10 +148,25 @@ function Game() {
     };
   }, []);
 
+  // Events
+  function addRotationPointPressed() {
+    console.log("rotation point");
+  }
+  function rotateAndScalePressed() {
+    console.log("rotate");
+  }
+  function adjustScalePressed() {
+    console.log("sclae");
+  }
   return (
     <div>
       {console.log(acitveOptions)}
-      <Gui acitveOptions={acitveOptions}></Gui>
+      <Gui
+        acitveOptions={acitveOptions}
+        addRotationPointPressed={addRotationPointPressed}
+        rotateAndScalePressed={rotateAndScalePressed}
+        adjustScalePressed={adjustScalePressed}
+      ></Gui>
       <div ref={mountRef}></div>
     </div>
   );
