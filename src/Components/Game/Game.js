@@ -21,9 +21,14 @@ import {
   WebGLRenderer,
 } from "three";
 import PICTURE from "./Geometry/Picture";
+import Gui from "./Gui/Gui";
+import { useState } from "react/cjs/react.development";
 
 function Game() {
   const mountRef = useRef(null);
+  const [acitveOptions, setAcitveOptions] = useState({
+    alignActions: false,
+  });
 
   useEffect(() => {
     //Vars for rendering
@@ -104,13 +109,22 @@ function Game() {
         outlineMesh.scale.multiplyScalar(1.05);
         scene.add(outlineMesh);
 
+        setAcitveOptions({
+          ...acitveOptions,
+          alignActions: true,
+        });
+
         selectedPicture.object.material.transparent = true;
       } else {
         if (selectedPicture !== null) {
           scene.remove(outlineMesh);
           selectedPicture.object.material.transparent = false;
           selectedPicture = null;
-          console.log("pp");
+
+          setAcitveOptions({
+            ...acitveOptions,
+            alignActions: false,
+          });
         }
       }
     }
@@ -131,7 +145,13 @@ function Game() {
     };
   }, []);
 
-  return <div ref={mountRef}></div>;
+  return (
+    <div>
+      {console.log(acitveOptions)}
+      <Gui acitveOptions={acitveOptions}></Gui>
+      <div ref={mountRef}></div>
+    </div>
+  );
 }
 
 export default Game;
