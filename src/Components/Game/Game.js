@@ -7,32 +7,33 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
   BackSide,
-  BoxGeometry,
   ImageLoader,
   Mesh,
   MeshBasicMaterial,
-  MeshPhongMaterial,
-  PlaneGeometry,
-  Ray,
   Raycaster,
   Scene,
   Vector2,
-  Vector3,
   WebGLRenderer,
 } from "three";
 import PICTURE from "./Geometry/Picture";
 import Gui from "./Gui/Gui";
 import { useState } from "react/cjs/react.development";
+import OBJECTRP from "./Geometry/ObjectRotationPoint";
+import PICTURERP from "./Geometry/PictureRotationPoint";
+import OUTLINEMESH from "./Geometry/OutlineMesh";
 
 function Game() {
   const mountRef = useRef(null);
   const [acitveOptions, setAcitveOptions] = useState({
     alignActions: false,
   });
+  const [scene, setScene] = useState();
+  var [rotationPointEditing] = useState(false);
 
   useEffect(() => {
     //Vars for rendering
     const scene = new Scene();
+    setScene(scene); // add scene to state so that it can be accessed from outside
     const renderer = new WebGLRenderer();
     const fbxLoader = new FBXLoader();
     const imageLoader = new ImageLoader();
@@ -41,20 +42,9 @@ function Game() {
     var mouse = new Vector2();
     //Vars for state of application
     var selectedPicture = null;
-    var outlineMesh;
-    var pictureRoationPoint;
-    var objectRotationPoint;
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     mountRef.current.appendChild(renderer.domElement);
-
-    //SHADERS???
-    var outlineMaterial = new MeshBasicMaterial({
-      color: 0x00ff00,
-      side: BackSide,
-      opacity: 0.5,
-      transparent: true,
-    });
 
     //Orbit controlls
     const controls = new OrbitControls(CAMERA, renderer.domElement);
@@ -67,6 +57,9 @@ function Game() {
     scene.add(SUN.target);
 
     scene.add(PICTURE);
+    scene.add(OUTLINEMESH);
+    scene.add(OBJECTRP);
+    scene.add(PICTURERP);
 
     fbxLoader.load(process.env.PUBLIC_URL + "Models/Monkey.fbx", (object) => {
       object.scale.set(0.01, 0.01, 0.01);
@@ -96,20 +89,8 @@ function Game() {
       let intersects = raycaster.intersectObjects([PICTURE], false);
       console.log(intersects);
       if (intersects.length > 0) {
-        scene.remove(outlineMesh);
         selectedPicture = intersects[0];
-        outlineMesh = new Mesh(
-          selectedPicture.object.geometry,
-          outlineMaterial
-        );
-        outlineMesh.position.set(
-          selectedPicture.object.position.x,
-          selectedPicture.object.position.y,
-          selectedPicture.object.position.z
-        );
-        outlineMesh.rotation.setFromVector3(selectedPicture.object.rotation);
-        outlineMesh.scale.multiplyScalar(1.05);
-        scene.add(outlineMesh);
+        addOutlineMeshToObject(selectedPicture.object);
 
         setAcitveOptions({
           ...acitveOptions,
@@ -119,7 +100,7 @@ function Game() {
         selectedPicture.object.material.transparent = true;
       } else {
         if (selectedPicture !== null) {
-          scene.remove(outlineMesh);
+          OUTLINEMESH.visible = false;
           selectedPicture.object.material.transparent = false;
           selectedPicture = null;
 
@@ -134,6 +115,11 @@ function Game() {
     //Add event listeners
     window.addEventListener("resize", onWindowResize, false);
     mountRef.current.addEventListener("mousedown", onSceneMouseDown, false);
+    mountRef.current.addEventListener(
+      "mousedown",
+      onSceneMouseDownGlobal,
+      false
+    ); // todo: be merged with local one
 
     animate();
     // Remove everything on destroy
@@ -147,10 +133,34 @@ function Game() {
       mountRef.current.removeChild(renderer.domElement);
     };
   }, []);
+  //Global event listeners
+  function onSceneMouseDownGlobal() {}
+
+  //Functions
+  function addOutlineMeshToObject(object) {
+    OUTLINEMESH.geometry = object.geometry;
+    OUTLINEMESH.position.set(
+      object.position.x,
+      object.position.y,
+      object.position.z
+    );
+    OUTLINEMESH.rotation.setFromVector3(object.rotation);
+
+    OUTLINEMESH.visible = true;
+  }
+  function toggleRotationPointsVisible() {
+    OBJECTRP.visible = !OBJECTRP.visible;
+    PICTURERP.visible = !PICTURERP.visible;
+  }
+  function toggleRotationPointEditing() {
+    // rotationPointEditing = !rotationPointEditing; // doesnt force update for whole app
+    // console.log(rotationPointEditing);
+  }
 
   // Events
   function addRotationPointPressed() {
-    console.log("rotation point");
+    toggleRotationPointsVisible();
+    toggleRotationPointEditing();
   }
   function rotateAndScalePressed() {
     console.log("rotate");
@@ -160,7 +170,6 @@ function Game() {
   }
   return (
     <div>
-      {console.log(acitveOptions)}
       <Gui
         acitveOptions={acitveOptions}
         addRotationPointPressed={addRotationPointPressed}
