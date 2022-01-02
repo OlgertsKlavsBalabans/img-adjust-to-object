@@ -27,19 +27,23 @@ function Game() {
   const [acitveOptions, setAcitveOptions] = useState({
     alignActions: false,
   });
-  const [scene, setScene] = useState();
-  var [rotationPointEditing] = useState(false);
+
+  //Objects for threejs
+  const [scene] = useState(new Scene());
+  const [raycaster] = useState(new Raycaster());
+  const [mouse] = useState(new Vector2());
+  const [renderer] = useState(new WebGLRenderer());
+
+  const [threejsState] = useState({
+    rotationPointEditing: false,
+    selectedPicture: null,
+  });
 
   useEffect(() => {
-    //Vars for rendering
-    const scene = new Scene();
-    setScene(scene); // add scene to state so that it can be accessed from outside
-    const renderer = new WebGLRenderer();
+    //Objects for rendering
+    // const renderer = new WebGLRenderer();
     const fbxLoader = new FBXLoader();
     const imageLoader = new ImageLoader();
-    //Vars for calculation
-    const raycaster = new Raycaster();
-    var mouse = new Vector2();
     //Vars for state of application
     var selectedPicture = null;
 
@@ -81,45 +85,46 @@ function Game() {
       CAMERA.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
-    function onSceneMouseDown(event) {
-      mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
-      mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, CAMERA);
+    // function onSceneMouseDown(event) {
+    //   mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    //   mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+    //   raycaster.setFromCamera(mouse, CAMERA);
 
-      let intersects = raycaster.intersectObjects([PICTURE], false);
-      console.log(intersects);
-      if (intersects.length > 0) {
-        selectedPicture = intersects[0];
-        addOutlineMeshToObject(selectedPicture.object);
+    //   let intersects = raycaster.intersectObjects([PICTURE], false);
+    //   console.log(intersects);
+    //   if (intersects.length > 0) {
+    //     selectedPicture = intersects[0];
+    //     addOutlineMeshToObject(selectedPicture.object);
 
-        setAcitveOptions({
-          ...acitveOptions,
-          alignActions: true,
-        });
+    //     setAcitveOptions({
+    //       ...acitveOptions,
+    //       alignActions: true,
+    //     });
 
-        selectedPicture.object.material.transparent = true;
-      } else {
-        if (selectedPicture !== null) {
-          OUTLINEMESH.visible = false;
-          selectedPicture.object.material.transparent = false;
-          selectedPicture = null;
+    //     selectedPicture.object.material.transparent = true;
+    //   } else {
+    //     console.log(selectedPicture);
+    //     if (selectedPicture !== null) {
+    //       OUTLINEMESH.visible = false;
+    //       selectedPicture.object.material.transparent = false;
+    //       selectedPicture = null;
 
-          setAcitveOptions({
-            ...acitveOptions,
-            alignActions: false,
-          });
-        }
-      }
-    }
+    //       setAcitveOptions({
+    //         ...acitveOptions,
+    //         alignActions: false,
+    //       });
+    //     }
+    //   }
+    // }
 
     //Add event listeners
     window.addEventListener("resize", onWindowResize, false);
     mountRef.current.addEventListener("mousedown", onSceneMouseDown, false);
-    mountRef.current.addEventListener(
-      "mousedown",
-      onSceneMouseDownGlobal,
-      false
-    ); // todo: be merged with local one
+    // mountRef.current.addEventListener(
+    //   "mousedown",
+    //   onSceneMouseDownGlobal,
+    //   false
+    // ); // todo: be merged with local one
 
     animate();
     // Remove everything on destroy
@@ -134,8 +139,38 @@ function Game() {
     };
   }, []);
   //Global event listeners
-  function onSceneMouseDownGlobal() {}
+  // function onSceneMouseDownGlobal() {}
 
+  function onSceneMouseDown(event) {
+    mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, CAMERA);
+
+    let intersects = raycaster.intersectObjects([PICTURE], false);
+    console.log(intersects);
+    if (intersects.length > 0) {
+      threejsState.selectedPicture = intersects[0];
+      addOutlineMeshToObject(threejsState.selectedPicture.object);
+
+      setAcitveOptions({
+        ...acitveOptions,
+        alignActions: true,
+      });
+
+      threejsState.selectedPicture.object.material.transparent = true;
+    } else {
+      if (threejsState.selectedPicture !== null) {
+        OUTLINEMESH.visible = false;
+        threejsState.selectedPicture.object.material.transparent = false;
+        threejsState.selectedPicture = null;
+
+        setAcitveOptions({
+          ...acitveOptions,
+          alignActions: false,
+        });
+      }
+    }
+  }
   //Functions
   function addOutlineMeshToObject(object) {
     OUTLINEMESH.geometry = object.geometry;
