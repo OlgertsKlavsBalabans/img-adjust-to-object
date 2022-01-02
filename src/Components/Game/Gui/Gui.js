@@ -5,6 +5,7 @@ export default function Gui(props) {
   const [subOptions, setSubOptions] = useState({ align: false });
   return (
     <S.Gui>
+      {console.log("Gui updated")}
       <S.MainActions>
         {props.acitveOptions.alignActions ? (
           <button
