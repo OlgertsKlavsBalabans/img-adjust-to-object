@@ -34,7 +34,7 @@ function Game() {
   const [raycaster] = useState(new Raycaster());
   const [mouse] = useState(new Vector2());
   const [renderer] = useState(new WebGLRenderer());
-  const [controls] = useState(new OrbitControls(CAMERA, renderer.domElement));
+  const [controls, setControls] = useState();
 
   const [threejsState] = useState({
     rotationPointEditing: false,
@@ -55,8 +55,9 @@ function Game() {
     mountRef.current.appendChild(renderer.domElement);
 
     //Orbit controlls
-    // const controls = new OrbitControls(CAMERA, renderer.domElement);
+    const controls = new OrbitControls(CAMERA, renderer.domElement);
     controls.target.set(0, 1, 0);
+    setControls(controls);
 
     //Add objects
     scene.add(PLANE);
@@ -189,7 +190,15 @@ function Game() {
   }
   function toggleCamera() {}
   function toggleRoationControlls() {
-    // controls.target.set(0, 1, 0);
+    if (threejsState.rotateAndScaleMode) {
+      controls.target.set(
+        OBJECTRP.position.x,
+        OBJECTRP.position.y,
+        OBJECTRP.position.z
+      );
+    } else {
+      controls.target.set(0, 1, 0);
+    }
   }
   // Events
   function addRotationPointPressed() {
