@@ -13,7 +13,7 @@ const texture = new TextureLoader().load(
   process.env.PUBLIC_URL + "Images/Monkey.png"
 );
 
-const material = new MeshBasicMaterial({ map: texture, opacity: 0.5 });
+const material = new MeshBasicMaterial({ map: texture, opacity: 0.7 });
 const PICTURE = new Mesh(planeGeo, material);
 PICTURE.rotation.y = -0.8;
 PICTURE.position.set(-10, 2, 10);
