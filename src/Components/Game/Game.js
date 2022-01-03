@@ -10,6 +10,7 @@ import {
   ImageLoader,
   Mesh,
   MeshBasicMaterial,
+  Euler,
   Raycaster,
   Scene,
   Vector3,
@@ -42,6 +43,8 @@ function Game() {
     selectedPicture: null,
     pictureRotationPointAdded: false,
     rotateAndScaleMode: false,
+    pictureRPRelativePosition: new Vector3(),
+    pictureRotationBeforeRotating: new Euler(),
   });
 
   useEffect(() => {
@@ -75,32 +78,49 @@ function Game() {
     function animate() {
       setTimeout(() => {
         if (threejsState.rotateAndScaleMode) {
-          // console.log("rotate&scale");
-          // console.log(threejsState.selectedPicture.object.position.length());
+          //Keep PICTURERP aligned between OBJECTRP and camera
           let rotationVector = new Vector3(
             CAMERA.position.x - OBJECTRP.position.x,
             CAMERA.position.y - OBJECTRP.position.y,
             CAMERA.position.z - OBJECTRP.position.z
           );
-          // console.log(CAMERA.position);
-          // console.log(OBJECTRP.position);
-          console.log(PICTURERP.position);
-
           let rotationVectorScale =
             1 - (rotationVector.length() - 2) / rotationVector.length();
-          // console.log(rotationVector);
-
-          // console.log(rotationVectorScale);
           PICTURERP.position.set(
             CAMERA.position.x - rotationVector.x * rotationVectorScale,
             CAMERA.position.y - rotationVector.y * rotationVectorScale,
             CAMERA.position.z - rotationVector.z * rotationVectorScale
           );
-          // threejsState.selectedPicture.object.position.set(
-          //   CAMERA.position.x,
-          //   CAMERA.position.y,
-          //   CAMERA.position.z
-          // );
+          // Move selected picture to PICTURERP location + relative position
+
+          PICTURERP.lookAt(CAMERA.position);
+          threejsState.selectedPicture.object.rotation.setFromVector3(
+            PICTURERP.rotation
+          );
+          //Create temp relative position of picture from rotation point and apply rotation euler
+          let rotatedRelativeRPPosition = new Vector3(
+            threejsState.pictureRPRelativePosition.x,
+            threejsState.pictureRPRelativePosition.y,
+            threejsState.pictureRPRelativePosition.z
+          );
+          // IMPORTANT first apply negative euler of starting rotation then apply positive euler othervise doesnt work
+          rotatedRelativeRPPosition.applyEuler(
+            new Euler(
+              -threejsState.pictureRotationBeforeRotating.x,
+              -threejsState.pictureRotationBeforeRotating.y,
+              -threejsState.pictureRotationBeforeRotating.z
+            )
+          );
+          rotatedRelativeRPPosition.applyEuler(
+            threejsState.selectedPicture.object.rotation
+          );
+
+          //Position the selected picture relatively from Picture rotation point
+          threejsState.selectedPicture.object.position.set(
+            PICTURERP.position.x + rotatedRelativeRPPosition.x,
+            PICTURERP.position.y + rotatedRelativeRPPosition.y,
+            PICTURERP.position.z + rotatedRelativeRPPosition.z
+          );
         }
         requestAnimationFrame(animate);
         renderer.render(scene, CAMERA);
@@ -144,7 +164,7 @@ function Game() {
     } else {
       let intersects = raycaster.intersectObjects([PICTURE], false);
 
-      console.log(intersects);
+      // console.log(intersects);
       if (intersects.length > 0) {
         threejsState.selectedPicture = intersects[0];
         addOutlineMeshToObject(threejsState.selectedPicture.object);
@@ -219,7 +239,6 @@ function Game() {
   function toggleRotateAndScaleMode() {
     threejsState.rotateAndScaleMode = !threejsState.rotateAndScaleMode;
   }
-  function toggleCamera() {}
   function toggleRoationControlls() {
     if (threejsState.rotateAndScaleMode) {
       controls.target.set(
@@ -228,8 +247,16 @@ function Game() {
         OBJECTRP.position.z
       );
     } else {
-      controls.target.set(0, 1, 0);
+      controls.target.set(0, 1, 0); // default state
     }
+  }
+  function savePictureRPPosition() {
+    threejsState.pictureRPRelativePosition.set(
+      threejsState.selectedPicture.object.position.x - PICTURERP.position.x,
+      threejsState.selectedPicture.object.position.y - PICTURERP.position.y,
+      threejsState.selectedPicture.object.position.z - PICTURERP.position.z
+    );
+    // console.log(threejsState.pictureRPRelativePosition);
   }
   // Events
   function addRotationPointPressed() {
@@ -238,8 +265,11 @@ function Game() {
   }
   function rotateAndScalePressed() {
     toggleRotateAndScaleMode();
-    toggleCamera();
     toggleRoationControlls();
+    savePictureRPPosition();
+    threejsState.pictureRotationBeforeRotating.setFromVector3(
+      threejsState.selectedPicture.object.rotation
+    );
     console.log("rotate");
   }
   function adjustScalePressed() {
