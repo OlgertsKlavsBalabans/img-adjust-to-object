@@ -12,6 +12,7 @@ import {
   MeshBasicMaterial,
   Raycaster,
   Scene,
+  Vector3,
   Vector2,
   WebGLRenderer,
 } from "three";
@@ -73,6 +74,34 @@ function Game() {
 
     function animate() {
       setTimeout(() => {
+        if (threejsState.rotateAndScaleMode) {
+          // console.log("rotate&scale");
+          // console.log(threejsState.selectedPicture.object.position.length());
+          let rotationVector = new Vector3(
+            CAMERA.position.x - OBJECTRP.position.x,
+            CAMERA.position.y - OBJECTRP.position.y,
+            CAMERA.position.z - OBJECTRP.position.z
+          );
+          // console.log(CAMERA.position);
+          // console.log(OBJECTRP.position);
+          console.log(PICTURERP.position);
+
+          let rotationVectorScale =
+            1 - (rotationVector.length() - 2) / rotationVector.length();
+          // console.log(rotationVector);
+
+          // console.log(rotationVectorScale);
+          PICTURERP.position.set(
+            CAMERA.position.x - rotationVector.x * rotationVectorScale,
+            CAMERA.position.y - rotationVector.y * rotationVectorScale,
+            CAMERA.position.z - rotationVector.z * rotationVectorScale
+          );
+          // threejsState.selectedPicture.object.position.set(
+          //   CAMERA.position.x,
+          //   CAMERA.position.y,
+          //   CAMERA.position.z
+          // );
+        }
         requestAnimationFrame(animate);
         renderer.render(scene, CAMERA);
       }, 1000 / 60);
@@ -108,8 +137,10 @@ function Game() {
     mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
     mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, CAMERA);
-    if (threejsState.rotateAndScalePressed) {
+
+    if (threejsState.rotationPointEditing) {
       addRotationPoint();
+    } else if (threejsState.rotateAndScaleMode) {
     } else {
       let intersects = raycaster.intersectObjects([PICTURE], false);
 
@@ -183,7 +214,7 @@ function Game() {
     PICTURERP.visible = !PICTURERP.visible;
   }
   function toggleRotationPointEditing() {
-    threejsState.rotateAndScalePressed = !threejsState.rotateAndScalePressed;
+    threejsState.rotationPointEditing = !threejsState.rotationPointEditing;
   }
   function toggleRotateAndScaleMode() {
     threejsState.rotateAndScaleMode = !threejsState.rotateAndScaleMode;
