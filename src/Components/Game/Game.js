@@ -24,6 +24,7 @@ import OBJECTRP from "./Geometry/ObjectRotationPoint";
 import PICTURERP from "./Geometry/PictureRotationPoint";
 import OUTLINEMESH from "./Geometry/OutlineMesh";
 import MONKEY from "./Geometry/Monkey";
+import PICTURESP from "./Geometry/PictureScalePoint";
 
 function Game() {
   const mountRef = useRef(null);
@@ -45,6 +46,8 @@ function Game() {
     rotateAndScaleMode: false,
     pictureRPRelativePosition: new Vector3(),
     pictureRotationBeforeRotating: new Euler(),
+    scaleMode: false,
+    ScalingSelectedPicture: false,
   });
 
   useEffect(() => {
@@ -73,6 +76,7 @@ function Game() {
     scene.add(OUTLINEMESH);
     scene.add(OBJECTRP);
     scene.add(PICTURERP);
+    scene.add(PICTURESP);
     scene.add(MONKEY);
 
     function animate() {
@@ -138,6 +142,8 @@ function Game() {
     //Add event listeners
     window.addEventListener("resize", onWindowResize, false);
     mountRef.current.addEventListener("mousedown", onSceneMouseDown, false);
+    mountRef.current.addEventListener("mouseup", onSceneMouseUp, false);
+    mountRef.current.addEventListener("mousemove", onMouseMove, false);
 
     animate();
     // Remove everything on destroy
@@ -148,10 +154,29 @@ function Game() {
         onSceneMouseDown,
         false
       );
+      mountRef.current.removeEventListener("mouseup", onSceneMouseUp, false);
+      mountRef.current.removeEventListener("mousemove", onMouseMove, false);
+
       mountRef.current.removeChild(renderer.domElement);
     };
   }, []);
   //Global event listeners
+
+  function onMouseMove(event) {
+    if (threejsState.ScalingSelectedPicture) {
+      mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+      mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, CAMERA);
+      let intersects = raycaster.intersectObjects([OUTLINEMESH], false);
+      console.log(intersects);
+    }
+  }
+  function onSceneMouseUp(event) {
+    if (threejsState.scaleMode) {
+      toggleScalingSelectedPicture();
+      toggleOrbitControlls();
+    }
+  }
 
   function onSceneMouseDown(event) {
     mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
@@ -161,6 +186,10 @@ function Game() {
     if (threejsState.rotationPointEditing) {
       addRotationPoint();
     } else if (threejsState.rotateAndScaleMode) {
+    } else if (threejsState.scaleMode) {
+      addScalePoint();
+      toggleScalingSelectedPicture();
+      toggleOrbitControlls();
     } else {
       let intersects = raycaster.intersectObjects([PICTURE], false);
 
@@ -258,6 +287,40 @@ function Game() {
     );
     // console.log(threejsState.pictureRPRelativePosition);
   }
+
+  function togglePictureSPVisible() {
+    PICTURESP.visible = !PICTURESP.visible;
+  }
+  function toggleScaleMode() {
+    threejsState.scaleMode = !threejsState.scaleMode;
+  }
+
+  function addScalePoint() {
+    let intersects = raycaster.intersectObjects(
+      [threejsState.selectedPicture.object],
+      false
+    );
+    if (intersects.length > 0) {
+      PICTURESP.position.set(
+        intersects[0].point.x,
+        intersects[0].point.y,
+        intersects[0].point.z
+      );
+    }
+  }
+  function toggleScalingSelectedPicture() {
+    let intersects = raycaster.intersectObjects([OUTLINEMESH], false);
+    if (intersects.length > 0) {
+      threejsState.ScalingSelectedPicture =
+        !threejsState.ScalingSelectedPicture;
+    }
+  }
+
+  function toggleOrbitControlls() {
+    console.log(controls);
+    // controls.enabled = !controls.enabled;
+  }
+
   // Events
   function addRotationPointPressed() {
     toggleRotationPointsVisible();
@@ -273,6 +336,8 @@ function Game() {
     console.log("rotate");
   }
   function adjustScalePressed() {
+    togglePictureSPVisible();
+    toggleScaleMode();
     console.log("sclae");
   }
   return (
