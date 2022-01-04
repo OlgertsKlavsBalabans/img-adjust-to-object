@@ -37,9 +37,9 @@ function Game() {
   const [raycaster] = useState(new Raycaster());
   const [mouse] = useState(new Vector2());
   const [renderer] = useState(new WebGLRenderer());
-  const [controls, setControls] = useState();
 
   const [threejsState] = useState({
+    controls: null,
     rotationPointEditing: false,
     selectedPicture: null,
     pictureRotationPointAdded: false,
@@ -62,9 +62,8 @@ function Game() {
     mountRef.current.appendChild(renderer.domElement);
 
     //Orbit controlls
-    const controls = new OrbitControls(CAMERA, renderer.domElement);
-    controls.target.set(0, 1, 0);
-    setControls(controls);
+    threejsState.controls = new OrbitControls(CAMERA, renderer.domElement);
+    threejsState.controls.target.set(0, 1, 0);
 
     //Add objects
     scene.add(PLANE);
@@ -270,13 +269,13 @@ function Game() {
   }
   function toggleRoationControlls() {
     if (threejsState.rotateAndScaleMode) {
-      controls.target.set(
+      threejsState.controls.target.set(
         OBJECTRP.position.x,
         OBJECTRP.position.y,
         OBJECTRP.position.z
       );
     } else {
-      controls.target.set(0, 1, 0); // default state
+      threejsState.controls.target.set(0, 1, 0); // default state
     }
   }
   function savePictureRPPosition() {
@@ -317,8 +316,7 @@ function Game() {
   }
 
   function toggleOrbitControlls() {
-    console.log(controls);
-    // controls.enabled = !controls.enabled;
+    threejsState.controls.enabled = !threejsState.controls.enabled;
   }
 
   // Events
