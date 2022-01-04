@@ -16,6 +16,7 @@ import {
   Vector3,
   Vector2,
   WebGLRenderer,
+  Quaternion,
 } from "three";
 import PICTURE from "./Geometry/Picture";
 import Gui from "./Gui/Gui";
@@ -48,6 +49,7 @@ function Game() {
     pictureRotationBeforeRotating: new Euler(),
     scaleMode: false,
     ScalingSelectedPicture: false,
+    pictureSPRelativePosition: new Vector3(),
   });
 
   useEffect(() => {
@@ -167,7 +169,52 @@ function Game() {
       mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, CAMERA);
       let intersects = raycaster.intersectObjects([OUTLINEMESH], false);
-      console.log(intersects);
+      // console.log(intersects);
+
+      //should always have intersect point becouse of outlineMesh being there when this is used
+      //Scale picture
+      let intersectPoint = intersects[0].point;
+      let selectedPicturePosition =
+        threejsState.selectedPicture.object.position;
+      let vectorBetweenPoints = new Vector3(
+        intersectPoint.x - selectedPicturePosition.x,
+        intersectPoint.y - selectedPicturePosition.y,
+        intersectPoint.z - selectedPicturePosition.z
+      );
+      let quaternionRotation = new Quaternion();
+      quaternionRotation.setFromEuler(
+        threejsState.selectedPicture.object.rotation
+      );
+      quaternionRotation.invert();
+      vectorBetweenPoints.applyQuaternion(quaternionRotation);
+      let scaleX =
+        (vectorBetweenPoints.x * 2) /
+        threejsState.selectedPicture.object.geometry.parameters.width;
+      let scaleY =
+        (vectorBetweenPoints.y * 2) /
+        threejsState.selectedPicture.object.geometry.parameters.height;
+      threejsState.selectedPicture.object.scale.x = scaleX;
+      threejsState.selectedPicture.object.scale.y = scaleY;
+
+      //Move picture relative to Picture scale point
+      let tempSPRelPos = new Vector3(
+        threejsState.pictureSPRelativePosition.x,
+        threejsState.pictureSPRelativePosition.y,
+        threejsState.pictureSPRelativePosition.z
+      );
+      tempSPRelPos.applyQuaternion(quaternionRotation);
+      tempSPRelPos.set(
+        tempSPRelPos.x * scaleX,
+        tempSPRelPos.y * scaleY,
+        tempSPRelPos.z
+      );
+      quaternionRotation.invert();
+      tempSPRelPos.applyQuaternion(quaternionRotation);
+      threejsState.selectedPicture.object.position.set(
+        PICTURESP.position.x - tempSPRelPos.x,
+        PICTURESP.position.y - tempSPRelPos.y,
+        PICTURESP.position.z - tempSPRelPos.z
+      );
     }
   }
   function onSceneMouseUp(event) {
@@ -189,6 +236,7 @@ function Game() {
       addScalePoint();
       toggleScalingSelectedPicture();
       toggleOrbitControlls();
+      setPictureSPRelativePosition();
     } else {
       let intersects = raycaster.intersectObjects([PICTURE], false);
 
@@ -317,6 +365,14 @@ function Game() {
 
   function toggleOrbitControlls() {
     threejsState.controls.enabled = !threejsState.controls.enabled;
+  }
+
+  function setPictureSPRelativePosition() {
+    threejsState.pictureSPRelativePosition = new Vector3(
+      PICTURESP.position.x - threejsState.selectedPicture.object.position.x,
+      PICTURESP.position.y - threejsState.selectedPicture.object.position.y,
+      PICTURESP.position.z - threejsState.selectedPicture.object.position.z
+    );
   }
 
   // Events
