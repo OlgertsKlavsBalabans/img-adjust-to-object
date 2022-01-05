@@ -22,3 +22,6 @@ export const SeconderyActions = styled.div`
   padding-left: 0px;
   width: fit-content;
 `;
+export const GUIText = styled.div`
+  color: white;
+`;

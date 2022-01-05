@@ -3,6 +3,10 @@ import * as S from "./GuiStyles";
 
 export default function Gui(props) {
   const [subOptions, setSubOptions] = useState({ align: false });
+  const [cameraDistance, setCameraDistance] = useState(3);
+  const [opacity, setOpacity] = useState(0.9);
+  const [scale, setScale] = useState(1);
+
   return (
     <S.Gui>
       {console.log("Gui updated")}
@@ -41,6 +45,39 @@ export default function Gui(props) {
             >
               Adjust scale
             </button>
+            <S.GUIText>Camera distance</S.GUIText>
+            <input
+              onChange={(e) => {
+                setCameraDistance(e.target.value);
+              }}
+              type="range"
+              min="1"
+              max="100"
+              value={cameraDistance}
+              id="cameraDistance"
+            ></input>
+            <S.GUIText>Opacity</S.GUIText>
+            <input
+              onChange={(e) => {
+                setOpacity(e.target.value);
+              }}
+              type="range"
+              min="1"
+              max="100"
+              value={opacity}
+              id="opacity"
+            ></input>
+            <S.GUIText>Scale</S.GUIText>
+            <input
+              onChange={(e) => {
+                setScale(e.target.value);
+              }}
+              type="range"
+              min="1"
+              max="100"
+              value={scale}
+              id="scale"
+            ></input>
           </>
         ) : null}
       </S.SeconderyActions>
