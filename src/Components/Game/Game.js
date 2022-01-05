@@ -51,6 +51,7 @@ function Game() {
     scaleMode: false,
     ScalingSelectedPicture: false,
     pictureSPRelativePosition: new Vector3(),
+    cameraDistanceFromPictureRP: 3,
   });
 
   useEffect(() => {
@@ -93,7 +94,10 @@ function Game() {
             CAMERA.position.z - OBJECTRP.position.z
           );
           let rotationVectorScale =
-            1 - (rotationVector.length() - 5) / rotationVector.length();
+            1 -
+            (rotationVector.length() -
+              threejsState.cameraDistanceFromPictureRP) /
+              rotationVector.length();
           PICTURERP.position.set(
             CAMERA.position.x - rotationVector.x * rotationVectorScale,
             CAMERA.position.y - rotationVector.y * rotationVectorScale,
@@ -413,6 +417,18 @@ function Game() {
     addScalingPlane();
     console.log("sclae");
   }
+
+  function cameraDistanceSliderChanged(value) {
+    threejsState.cameraDistanceFromPictureRP = value;
+  }
+  function opacitySliderChanged(value) {
+    threejsState.selectedPicture.object.material.opacity = value;
+  }
+  function scaleSliderChanged(value) {
+    threejsState.selectedPicture.object.scale.x = value;
+    threejsState.selectedPicture.object.scale.y = value;
+    threejsState.selectedPicture.object.scale.z = value;
+  }
   return (
     <div>
       <Gui
@@ -420,6 +436,9 @@ function Game() {
         addRotationPointPressed={addRotationPointPressed}
         rotateAndScalePressed={rotateAndScalePressed}
         adjustScalePressed={adjustScalePressed}
+        cameraDistanceSliderChanged={cameraDistanceSliderChanged}
+        opacitySliderChanged={opacitySliderChanged}
+        scaleSliderChanged={scaleSliderChanged}
       ></Gui>
       <div ref={mountRef}></div>
     </div>

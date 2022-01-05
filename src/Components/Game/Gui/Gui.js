@@ -9,7 +9,6 @@ export default function Gui(props) {
 
   return (
     <S.Gui>
-      {console.log("Gui updated")}
       <S.MainActions>
         {props.acitveOptions.alignActions ? (
           <button
@@ -49,10 +48,12 @@ export default function Gui(props) {
             <input
               onChange={(e) => {
                 setCameraDistance(e.target.value);
+                props.cameraDistanceSliderChanged(e.target.value);
               }}
               type="range"
               min="1"
-              max="100"
+              max="10"
+              step={0.1}
               value={cameraDistance}
               id="cameraDistance"
             ></input>
@@ -60,10 +61,12 @@ export default function Gui(props) {
             <input
               onChange={(e) => {
                 setOpacity(e.target.value);
+                props.opacitySliderChanged(e.target.value);
               }}
               type="range"
-              min="1"
-              max="100"
+              min="0"
+              max="1"
+              step={0.05}
               value={opacity}
               id="opacity"
             ></input>
@@ -71,10 +74,12 @@ export default function Gui(props) {
             <input
               onChange={(e) => {
                 setScale(e.target.value);
+                props.scaleSliderChanged(e.target.value);
               }}
               type="range"
-              min="1"
-              max="100"
+              min="0.1"
+              max="2"
+              step={0.05}
               value={scale}
               id="scale"
             ></input>
