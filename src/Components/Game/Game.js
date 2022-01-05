@@ -26,6 +26,7 @@ import PICTURERP from "./Geometry/PictureRotationPoint";
 import OUTLINEMESH from "./Geometry/OutlineMesh";
 import MONKEY from "./Geometry/Monkey";
 import PICTURESP from "./Geometry/PictureScalePoint";
+import SCALINGPLANE from "./Geometry/ScalingPlane";
 
 function Game() {
   const mountRef = useRef(null);
@@ -78,6 +79,8 @@ function Game() {
     scene.add(OBJECTRP);
     scene.add(PICTURERP);
     scene.add(PICTURESP);
+    scene.add(SCALINGPLANE);
+
     scene.add(MONKEY);
 
     function animate() {
@@ -90,7 +93,7 @@ function Game() {
             CAMERA.position.z - OBJECTRP.position.z
           );
           let rotationVectorScale =
-            1 - (rotationVector.length() - 2) / rotationVector.length();
+            1 - (rotationVector.length() - 5) / rotationVector.length();
           PICTURERP.position.set(
             CAMERA.position.x - rotationVector.x * rotationVectorScale,
             CAMERA.position.y - rotationVector.y * rotationVectorScale,
@@ -168,8 +171,8 @@ function Game() {
       mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
       mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, CAMERA);
-      let intersects = raycaster.intersectObjects([OUTLINEMESH], false);
-      // console.log(intersects);
+      let intersects = raycaster.intersectObjects([SCALINGPLANE], false);
+      console.log(intersects);
 
       //should always have intersect point becouse of outlineMesh being there when this is used
       //Scale picture
@@ -302,7 +305,11 @@ function Game() {
       object.position.z
     );
     OUTLINEMESH.rotation.setFromVector3(object.rotation);
+    OUTLINEMESH.scale.x = object.scale.x;
+    OUTLINEMESH.scale.y = object.scale.y;
+    OUTLINEMESH.scale.z = object.scale.z;
 
+    OUTLINEMESH.scale.multiplyScalar(1.01);
     OUTLINEMESH.visible = true;
   }
   function toggleRotationPointsVisible() {
@@ -356,7 +363,7 @@ function Game() {
     }
   }
   function toggleScalingSelectedPicture() {
-    let intersects = raycaster.intersectObjects([OUTLINEMESH], false);
+    let intersects = raycaster.intersectObjects([SCALINGPLANE], false);
     if (intersects.length > 0) {
       threejsState.ScalingSelectedPicture =
         !threejsState.ScalingSelectedPicture;
@@ -375,6 +382,17 @@ function Game() {
     );
   }
 
+  function addScalingPlane() {
+    SCALINGPLANE.position.set(
+      threejsState.selectedPicture.object.position.x,
+      threejsState.selectedPicture.object.position.y,
+      threejsState.selectedPicture.object.position.z
+    );
+    SCALINGPLANE.rotation.setFromVector3(
+      threejsState.selectedPicture.object.rotation
+    );
+    SCALINGPLANE.geometry = threejsState.selectedPicture.object.geometry;
+  }
   // Events
   function addRotationPointPressed() {
     toggleRotationPointsVisible();
@@ -392,6 +410,7 @@ function Game() {
   function adjustScalePressed() {
     togglePictureSPVisible();
     toggleScaleMode();
+    addScalingPlane();
     console.log("sclae");
   }
   return (

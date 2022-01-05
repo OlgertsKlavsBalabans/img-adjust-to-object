@@ -9,7 +9,6 @@ var material = new MeshBasicMaterial({
 });
 
 var OUTLINEMESH = new Mesh(geometry, material);
-OUTLINEMESH.scale.multiplyScalar(1.01);
 OUTLINEMESH.visible = false;
 
 export default OUTLINEMESH;
