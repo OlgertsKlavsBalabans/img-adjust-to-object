@@ -6,7 +6,7 @@ const CAMERA = new PerspectiveCamera(
   90,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  10000
 );
 CAMERA.position.set(-15, 13, 15);
 CAMERA.lookAt(0, 0, 0);

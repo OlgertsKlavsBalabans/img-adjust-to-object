@@ -17,6 +17,9 @@ import {
   Vector2,
   WebGLRenderer,
   Quaternion,
+  Fog,
+  TextureLoader,
+  Loader,
 } from "three";
 import PICTURE from "./Geometry/Picture";
 import Gui from "./Gui/Gui";
@@ -27,6 +30,7 @@ import OUTLINEMESH from "./Geometry/OutlineMesh";
 import MONKEY from "./Geometry/Monkey";
 import PICTURESP from "./Geometry/PictureScalePoint";
 import SCALINGPLANE from "./Geometry/ScalingPlane";
+import BACKGROUND from "./Geometry/Background";
 
 function Game() {
   const mountRef = useRef(null);
@@ -83,6 +87,9 @@ function Game() {
     scene.add(SCALINGPLANE);
 
     scene.add(MONKEY);
+
+    scene.background = BACKGROUND;
+    //scene ambiance
 
     function animate() {
       setTimeout(() => {
